@@ -1,0 +1,118 @@
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.store-hero {
+    background: linear-gradient(135deg, #fff7ed 0%, #ffffff 44%, #f0fdf4 100%);
+    border-bottom: 1px solid #e7e5e4;
+}
+.hero-shelf {
+    min-height: 420px;
+    position: relative;
+    display: grid;
+    place-items: end center;
+    overflow: hidden;
+}
+.hero-shelf::before {
+    content: "";
+    position: absolute;
+    bottom: 40px;
+    width: min(92%, 560px);
+    height: 48px;
+    border-radius: 8px;
+    background: #292524;
+    box-shadow: 0 28px 50px rgba(41, 37, 36, .18);
+}
+.bottle {
+    position: absolute;
+    bottom: 80px;
+    width: 92px;
+    height: 270px;
+    border-radius: 26px 26px 12px 12px;
+    border: 3px solid rgba(41, 37, 36, .18);
+    box-shadow: inset 0 0 30px rgba(255,255,255,.32), 0 24px 38px rgba(41,37,36,.2);
+}
+.bottle::before {
+    content: "";
+    position: absolute;
+    left: 28px;
+    top: -64px;
+    width: 34px;
+    height: 76px;
+    border-radius: 12px 12px 4px 4px;
+    background: inherit;
+    border: inherit;
+    border-bottom: 0;
+}
+.bottle::after {
+    content: "";
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    top: 105px;
+    height: 78px;
+    border-radius: 8px;
+    background: rgba(255,255,255,.82);
+    border: 2px solid rgba(41,37,36,.14);
+}
+.bottle-one { left: 18%; background: #15803d; transform: rotate(-8deg); }
+.bottle-two { left: 41%; width: 106px; height: 310px; background: #b45309; }
+.bottle-three { right: 17%; background: #7f1d1d; transform: rotate(7deg); }
+.shelf-card {
+    position: absolute;
+    right: 5%;
+    top: 42px;
+    display: grid;
+    gap: 4px;
+    width: min(230px, 60%);
+    border: 1px solid #e7e5e4;
+    border-radius: 8px;
+    background: rgba(255,255,255,.94);
+    padding: 18px;
+    box-shadow: 0 18px 36px rgba(41, 37, 36, .12);
+}
+.shelf-card strong { font-size: 2rem; line-height: 1; color: #92400e; }
+.product-card {
+    overflow: hidden;
+    border: 1px solid #e7e5e4;
+    border-radius: 8px;
+    background: white;
+    box-shadow: 0 10px 22px rgba(41, 37, 36, .06);
+}
+.product-visual {
+    min-height: 160px;
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    padding: 16px;
+    background: linear-gradient(135deg, #292524 0%, #57534e 55%, #a16207 100%);
+    color: white;
+}
+.product-visual span { font-size: .75rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+.product-visual strong { font-size: 3rem; line-height: 1; opacity: .75; }
+.cart-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 60;
+    width: min(420px, 100vw);
+    height: 100vh;
+    background: white;
+    box-shadow: -18px 0 40px rgba(41, 37, 36, .2);
+    transform: translateX(105%);
+    transition: transform .2s ease;
+}
+.cart-panel.open { transform: translateX(0); }
+.dataTables_wrapper .dataTables_filter input,
+.dataTables_wrapper .dataTables_length select {
+    border: 1px solid #d6d3d1;
+    border-radius: 6px;
+    padding: 6px 10px;
+}
+@media (max-width: 640px) {
+    .hero-shelf { min-height: 300px; }
+    .bottle { width: 68px; height: 205px; bottom: 64px; }
+    .bottle::before { left: 20px; width: 26px; height: 56px; top: -48px; }
+    .bottle::after { top: 82px; height: 58px; }
+    .shelf-card { top: 10px; right: 2%; }
+}

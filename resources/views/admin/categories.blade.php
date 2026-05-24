@@ -1,0 +1,7 @@
+﻿<x-app-layout>
+<x-slot name="header"><div class="flex items-center justify-between"><h2 class="text-2xl font-black text-stone-950">Categories</h2><button id="addRecord" class="rounded-md bg-amber-700 px-4 py-2 text-sm font-bold text-white">Add Category</button></div></x-slot>
+<div class="bg-stone-50 py-8"><div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"><div class="rounded-lg border bg-white p-5 shadow-sm"><table id="recordsTable" class="display w-full"><thead><tr><th>ID</th><th>Name</th><th>Created</th><th>Actions</th></tr></thead></table></div></div></div>
+<div id="recordModal" class="fixed inset-0 z-50 hidden bg-black/40 p-4"><div class="mx-auto mt-20 max-w-lg rounded-lg bg-white p-5 shadow-xl"><div class="mb-4 flex items-center justify-between"><h3 id="modalTitle" class="text-xl font-black"></h3><button id="closeModal" class="rounded-md bg-stone-100 px-3 py-2 text-sm font-bold">Close</button></div><form id="recordForm" class="space-y-3"><input type="hidden" name="id"><input name="name" required placeholder="Category name" class="w-full rounded-md border-stone-300"><button class="rounded-md bg-amber-700 px-4 py-2 text-sm font-bold text-white">Save Category</button><p id="formMessage" class="text-sm font-bold"></p></form></div></div>
+@include('admin._datatable')
+<script>adminCrud({dataUrl:@json(route('admin.categories.data')),baseUrl:@json(route('admin.categories.store')),fields:['name'],columns:[{data:'id'},{data:'name'},{data:'created_at'},{data:null,orderable:false,render:data=>actionButtons(data)}]});</script>
+</x-app-layout>
