@@ -12,6 +12,7 @@
     <div class="bg-stone-50 py-8">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             @if ($isAdmin)
+                {{-- Stat cards --}}
                 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     @foreach ([['Total Orders', $stats['orders'] ?? 0], ['Pending Orders', $stats['pendingOrders'] ?? 0], ['Received Orders', $stats['receivedOrders'] ?? 0], ['Total Stock', $stats['totalStock'] ?? 0]] as [$label, $value])
                         <div class="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
@@ -36,19 +37,46 @@
                     </div>
                 </div>
 
-                <div class="mt-5 grid gap-3 sm:grid-cols-4">
+                {{-- Quick links --}}
+                <div class="mt-5 grid gap-3 sm:grid-cols-5">
                     <a class="rounded-md bg-amber-700 px-4 py-3 text-center text-sm font-semibold text-white" href="{{ route('admin.orders') }}">Manage Orders</a>
                     <a class="rounded-md bg-stone-900 px-4 py-3 text-center text-sm font-semibold text-white" href="{{ route('admin.products') }}">Manage Products</a>
                     <a class="rounded-md bg-stone-900 px-4 py-3 text-center text-sm font-semibold text-white" href="{{ route('admin.customers') }}">Customers</a>
                     <a class="rounded-md bg-stone-900 px-4 py-3 text-center text-sm font-semibold text-white" href="{{ route('admin.categories') }}">Categories</a>
+                    <a class="rounded-md bg-stone-700 px-4 py-3 text-center text-sm font-semibold text-white" href="{{ route('admin.activity-logs') }}">Activity Logs</a>
                 </div>
 
+                {{-- Charts row --}}
+                @if (!empty($chartData))
+                <div class="mt-6 grid gap-5 lg:grid-cols-3">
+                    <div class="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+                        <h3 class="text-base font-bold text-stone-950">Orders by Status</h3>
+                        <div class="mt-4 flex justify-center" style="height:200px">
+                            <canvas id="chartStatus"></canvas>
+                        </div>
+                    </div>
+                    <div class="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+                        <h3 class="text-base font-bold text-stone-950">Stock by Category</h3>
+                        <div class="mt-4" style="height:200px">
+                            <canvas id="chartStock"></canvas>
+                        </div>
+                    </div>
+                    <div class="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+                        <h3 class="text-base font-bold text-stone-950">Revenue — Last 7 Days</h3>
+                        <div class="mt-4" style="height:200px">
+                            <canvas id="chartRevenue"></canvas>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
+                {{-- Orders table + Stock watch --}}
                 <div class="mt-6 grid gap-5 xl:grid-cols-[1.4fr_.9fr]">
                     <section class="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
                         <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
                             <div>
                                 <h3 class="text-lg font-bold text-stone-950">Recent Customer Orders</h3>
-                                <p class="text-sm text-stone-500">See who ordered, delivery status, and how many days before receiving.</p>
+                                <p class="text-sm text-stone-500">Delivery status and how many days before receiving.</p>
                             </div>
                         </div>
                         <div class="mt-4 overflow-x-auto">
@@ -110,7 +138,9 @@
                         </div>
                     </section>
                 </div>
+
             @else
+                {{-- Customer stats --}}
                 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     @foreach ([['My Orders', $stats['orders'] ?? 0], ['Pending', $stats['pendingOrders'] ?? 0], ['Received', $stats['receivedOrders'] ?? 0], ['Paid Total', 'PHP ' . number_format($stats['totalSpent'] ?? 0, 2)]] as [$label, $value])
                         <div class="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
@@ -160,4 +190,85 @@
             @endif
         </div>
     </div>
+
+    @if ($isAdmin && !empty($chartData))
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+    (function () {
+        const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
+        const labelColor = isDark ? '#a8a29e' : '#78716c';
+
+        // Chart 1 — Orders by Status (doughnut)
+        const statusData = @json($chartData['ordersByStatus'] ?? []);
+        const statusColors = { Pending: '#f59e0b', Paid: '#10b981', Cancelled: '#ef4444', Delivered: '#3b82f6' };
+        new Chart(document.getElementById('chartStatus'), {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(statusData),
+                datasets: [{
+                    data: Object.values(statusData),
+                    backgroundColor: Object.keys(statusData).map(k => statusColors[k] ?? '#a8a29e'),
+                    borderWidth: 2,
+                    borderColor: isDark ? '#1c1917' : '#ffffff',
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom', labels: { color: labelColor, boxWidth: 12, padding: 10, font: { size: 11 } } } }
+            }
+        });
+
+        // Chart 2 — Stock by Category (bar)
+        const stockData = @json($chartData['stockByCategory'] ?? []);
+        new Chart(document.getElementById('chartStock'), {
+            type: 'bar',
+            data: {
+                labels: stockData.map(r => r.name),
+                datasets: [{
+                    label: 'Stock',
+                    data: stockData.map(r => r.total_stock),
+                    backgroundColor: '#b45309',
+                    borderRadius: 4,
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks: { color: labelColor, font: { size: 10 } }, grid: { display: false } },
+                    y: { ticks: { color: labelColor, font: { size: 10 } }, grid: { color: gridColor } }
+                }
+            }
+        });
+
+        // Chart 3 — Revenue last 7 days (line)
+        const revData = @json($chartData['revenueByDay'] ?? []);
+        new Chart(document.getElementById('chartRevenue'), {
+            type: 'line',
+            data: {
+                labels: revData.map(r => r.day.slice(5)),   // MM-DD
+                datasets: [{
+                    label: 'Revenue (PHP)',
+                    data: revData.map(r => r.revenue),
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16,185,129,0.1)',
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    fill: true,
+                    tension: 0.3,
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks: { color: labelColor, font: { size: 10 } }, grid: { display: false } },
+                    y: { ticks: { color: labelColor, font: { size: 10 }, callback: v => '₱' + v.toLocaleString() }, grid: { color: gridColor } }
+                }
+            }
+        });
+    })();
+    </script>
+    @endif
 </x-app-layout>
