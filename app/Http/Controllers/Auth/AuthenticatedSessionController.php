@@ -12,7 +12,7 @@ use Illuminate\View\View;
 class AuthenticatedSessionController extends Controller
 {
     /**
-     * Display the login view.
+     * Display the customer login view.
      */
     public function create(): View
     {
@@ -20,7 +20,15 @@ class AuthenticatedSessionController extends Controller
     }
 
     /**
-     * Handle an incoming authentication request.
+     * Show the admin login form.
+     */
+    public function showAdminLoginForm(): View
+    {
+        return view('auth.admin-login');
+    }
+
+    /**
+     * Handle an incoming authentication request for customers.
      */
     public function store(LoginRequest $request): RedirectResponse
     {
@@ -28,7 +36,37 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Optional: redirect admins to different page
+        // if (auth()->user()->role === 'admin') {
+        //     return redirect()->intended('/dashboard');
+        // }
+
         return redirect()->intended(route('dashboard', absolute: false));
+    }
+
+    /**
+     * Handle an authentication request for admin.
+     */
+    public function adminLogin(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'email'    => ['required', 'email'],
+            'password' => ['required'],
+        ]);
+
+        $credentials = $request->only('email', 'password');
+        $credentials['role'] = 'admin';
+
+        if (auth()->attempt($credentials, $request->boolean('remember'))) {
+            $request->session()->regenerate();
+
+            // Redirect admin to dashboard (or admin dashboard if you want a separate one)
+            return redirect()->intended(route('dashboard', absolute: false));
+        }
+
+        return back()->withErrors([
+            'email' => 'The provided credentials do not match our records or you are not authorized as admin.',
+        ]);
     }
 
     /**

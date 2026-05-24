@@ -1,15 +1,23 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StoreController;
 use Illuminate\Support\Facades\Route;
 
+// --- Admin login routes ---
+Route::get('/admin/login', [AuthenticatedSessionController::class, 'showAdminLoginForm'])->name('admin.login');
+Route::post('/admin/login', [AuthenticatedSessionController::class, 'adminLogin']);
+
+// --- Customer login continues as before ---
+
 Route::get('/', [StoreController::class, 'home'])->name('store.home');
 Route::get('/shop/products', [StoreController::class, 'products'])->name('store.products');
 Route::post('/checkout', [StoreController::class, 'checkout'])->middleware('auth')->name('store.checkout');
 
+// Dashboard route: Controller decides admin vs customer view!
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -17,6 +25,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    // ADMIN routes
     Route::get('/admin/products', [AdminController::class, 'productsPage'])->name('admin.products');
     Route::get('/admin/products/data', [AdminController::class, 'productsData'])->name('admin.products.data');
     Route::post('/admin/products', [AdminController::class, 'storeProduct'])->name('admin.products.store');
